@@ -1,118 +1,97 @@
 # previsao-demanda-estoque
 
-<div align="center">
-
 [English](README.en.md) · **Português (Brasil)**
 
-</div>
-
-[![Python 3](https://img.shields.io/badge/Python-3.x-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/) [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn)](https://scikit-learn.org/) [![pandas](https://img.shields.io/badge/pandas-150458?style=flat-square&logo=pandas)](https://pandas.pydata.org/) [![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=flat-square&logo=pytest)](https://docs.pytest.org/) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](LICENSE)
-
-### Projeto funcional ,  previsao-demanda-estoque
-
----
+[![Python 3](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](#) [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3%2B-F7931E?style=flat-square&logo=scikit-learn)](#) [![numpy](https://img.shields.io/badge/numpy-013243?style=flat-square&logo=numpy)](#) [![pytest](https://img.shields.io/badge/pytest-6%20testes-0A9EDC?style=flat-square&logo=pytest)](#) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](LICENSE)
 
 ## O que é
 
-Projeto funcional ,  previsao-demanda-estoque
+**Previsão de demanda e plano de reposição de estoque**: gera histórico de vendas sintético (ou usa o passado do produto), treina um modelo (scikit-learn) para **prever a demanda futura** e gera um **plano de reposição** com **estoque de segurança**, de forma **determinística** (mesmos parâmetros → mesmo resultado). É um laboratório educacional de ML aplicado a supply chain/inventário.
 
----
+## Status
 
-## Início Rápido
+Laboratório educacional de ML/operações, funcional e testado (6 testes).
 
-```bash
-# Clone e entre
-git clone https://github.com/KelvinOliveiraCode/<repo>.git
-cd <repo>
+## Funcionalidades
 
-# Instale dependências
-# Nenhum requirements.txt detectado
+- **Modelo de previsão de demanda** (`Previsao`): demanda prevista para data futura.
+- **Plano de reposição** (`ItemReposicao`): estoque projetado, estoque de segurança, demanda prevista.
+- **Avaliação com MAE** (`mean_absolute_error`).
+- **Determinismo**: seed fixa (`--random-state 42`).
+- **CLI**: `--dias-historico` (365), `--dias-futuro` (30), `--estoque-atual` (100), `--estoque-seguranca` (20), `--produto` (SKU-001).
 
-# Execute o projeto
-python main.py
+## Arquitetura
 
-# Execute os testes
-pytest
+Pacote `previsao_demanda_estoque` (na raiz, sem `src/`) com `modelo.py` (lógica) e `__main__.py` (CLI). Histórico → modelo → previsão → plano de reposição.
+
+```mermaid
+flowchart LR
+    HIST[histórico de vendas] --> MOD[modelo - sklearn]
+    MOD --> PRE[Previsao - demanda futura]
+    PRE --> REP[ItemReposicao - plano + estoque seguro]
+    CLI[__main__.py] --> MOD
 ```
 
-## Como funciona
+## Stack
 
-Estrutura limpa e modular com separação de responsabilidades.
+- Python ≥ 3.10
+- scikit-learn ≥ 1.3, numpy ≥ 1.24
+- pytest (dev)
 
----
+## Estrutura do repositório
 
-## Capacidades
+```
+previsao-demanda-estoque/
+├── pyproject.toml · BRIEF.md
+├── previsao_demanda_estoque/
+│   ├── modelo.py      # previsão + plano de reposição
+│   └── __main__.py    # CLI
+├── tests/test_modelo.py
+└── LICENSE            # MIT
+```
 
-| Capacidade | Descrição |
-|------------|-------------|
-| Carregamento de Dados | Auto-download do TensorFlow creditcard.csv (284k transações) com cache local |
-| EDA e Visualização | Distribuição de classes, histogramas de Amount, heatmaps de correlação (matplotlib/seaborn) |
-| Pré-processamento | RobustScaler em Amount/Time, split estratificado, remoção de duplicatas |
-| Balanceamento | SMOTE oversampling (fallback: class_weight="balanced") |
-| Modelagem | LogisticRegression, RandomForest, ExtraTrees com RandomizedSearchCV (StratifiedKFold) |
-| Métricas | Accuracy, Precision, Recall, F1, ROC AUC, Specificity, Confusion Matrix |
-| Seleção | Score ponderado: Recall 40% + F1 30% + Precision 20% + Accuracy 10% |
-| Persistência | Serialização joblib para modelo, scaler e resultados completos |
+## Pré-requisitos e instalação
 
+Python ≥ 3.10.
 
----
+```bash
+pip install -e .
+```
 
+## Como executar
 
+```bash
+python -m previsao_demanda_estoque --dias-historico 365 --dias-futuro 30 --estoque-atual 100
+# prevê a demanda futura e gera o plano de reposição para SKU-001
+```
 
----
+## Testes e qualidade
 
-## Perguntas Frequentes
+Comando real (verificado pelo agente):
 
-<details>
-<summary><strong>O que é este projeto?</strong></summary>
+```bash
+python -m pytest tests/
+# 6 passed
+```
 
-Um estudo/projeto em Python demonstrando conceitos fundamentais.
+## Decisões técnicas e trade-offs
 
-</details>
+- **Determinismo com seed fixa**: resultados reprodutíveis e comparáveis.
+- **Histórico sintético**: permite testar o pipeline sem dados reais; em troca, não reflete uma série real de vendas.
+- **Prevê demanda e reposição juntos**: liga a previsão ao efeito operacional (quanto repor).
 
-<details>
-<summary><strong>Como executar?</strong></summary>
+## Limitações conhecidas e roadmap
 
-Veja [Início Rápido](#início-rápido) para comandos copiáveis.
+- Modelo treinado em dados sintéticos — validar/re-treinar com histórico real antes de usar.
+- Sem sazonalidade/tendência avançadas além do que o modelo captura.
+- Sem dashboard/visualização.
 
-</details>
+## Processo de desenvolvimento
 
-<details>
-<summary><strong>Há testes?</strong></summary>
+Projeto individual de Kelvin Oliveira, construído com agentes de IA orquestrados e revisado pelo autor. A modelagem de demanda e a revisão são do autor.
 
-Nenhum teste automatizado neste repositório.
+## Licença e autor
 
-</details>
+MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira.
 
-<details>
-<summary><strong>Posso usar em produção?</strong></summary>
-
-Este é um **projeto de estudo/portfólio**. Revise e endureça (auth, persistência, monitoramento, etc.) antes de usar em produção.
-
-</details>
-
-
-
----
-
-## Documentação
-
-- **Código-Fonte** ,  Navegue pelo diretório `src/` para detalhes de implementação
-- **Referência da API** ,  Docstrings inline + type hints
-- **Diagrama de Arquitetura** ,  Veja [architecture.mermaid](docs/architecture.mermaid) (se presente)
-- **Changelog** ,  [CHANGELOG.md](CHANGELOG.md) (se presente)
-- **Contribuindo** ,  [CONTRIBUTING.md](CONTRIBUTING.md) (se presente)
-
-## Licença
-
-[MIT](LICENSE) ,  Kelvin Oliveira
-
----
-
-<div align="center">
-
-**Construído com** · Python 3 + scikit-learn + pandas
-
-**Autor** · [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
-
-</div>
+**Autor**: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfólio](https://kelvinoliveiracode.github.io/portfolio/)
